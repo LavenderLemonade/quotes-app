@@ -16,6 +16,7 @@ namespace QuotesApi.Controllers
             _configuration = configuration;
         }
 
+
         [HttpGet]
         [Route("GetQuotes")]
         public JsonResult GetQuotes()
@@ -32,6 +33,34 @@ namespace QuotesApi.Controllers
                 using (SqlCommand myCommand = new SqlCommand(query, myCon))
                 {
                     myReader = myCommand.ExecuteReader();
+                    table.Load(myReader);
+                    myReader.Close();
+                    myCon.Close();
+                }
+
+            }
+
+            return new JsonResult(table);
+        }
+
+
+        [HttpGet]
+        [Route("GetRandomQuote")]
+        public JsonResult GetRandomQuote()
+        {
+            string sp = @"dbo.[getRandomQuote]";
+            DataTable table = new DataTable();
+
+            string sqlDataSource = _configuration.GetConnectionString("quotesAppDBConn");
+
+            SqlDataReader myReader;
+            using (SqlConnection myCon = new SqlConnection(sqlDataSource))
+            {
+                myCon.Open();
+                using (SqlCommand myCommand = new SqlCommand(sp, myCon))
+                {
+                    myCommand.CommandType = CommandType.StoredProcedure;
+                    myReader = myCommand.ExecuteReader(); 
                     table.Load(myReader);
                     myReader.Close();
                     myCon.Close();
